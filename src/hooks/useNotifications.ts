@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { parse } from 'url';
+import axios, { AxiosPromise, AxiosResponse } from 'axios';
 import { useCallback, useState } from 'react';
 
 import { AccountNotifications, AuthState, SettingsState } from '../types';
@@ -53,15 +52,15 @@ export const useNotifications = (): NotificationsState => {
       const isGitHubLoggedIn = accounts.token !== null;
       const endpointSuffix = `notifications?participating=${settings.participating}`;
 
-      function getGitHubNotifications() {
+      function getGitHubNotifications(page = 0): AxiosPromise<any> {
         if (!isGitHubLoggedIn) {
           return;
         }
-        const url = `https://api.${Constants.DEFAULT_AUTH_OPTIONS.hostname}/${endpointSuffix}`;
+        const url = `https://api.${Constants.DEFAULT_AUTH_OPTIONS.hostname}/${endpointSuffix}&page=${page}`;
         return apiRequestAuth(url, 'GET', accounts.token);
       }
 
-      function getEnterpriseNotifications() {
+      function getEnterpriseNotifications(): AxiosPromise<any>[] {
         return accounts.enterpriseAccounts.map((account) => {
           const hostname = account.hostname;
           const token = account.token;
@@ -73,47 +72,56 @@ export const useNotifications = (): NotificationsState => {
       setIsFetching(true);
       setRequestFailed(false);
 
-      return axios
-        .all([getGitHubNotifications(), ...getEnterpriseNotifications()])
-        .then(
-          axios.spread((gitHubNotifications, ...entAccNotifications) => {
-            const enterpriseNotifications = entAccNotifications.map(
-              (accountNotifications) => {
-                const { hostname } = parse(accountNotifications.config.url);
-                return {
-                  hostname,
-                  notifications: accountNotifications.data,
-                };
-              }
-            );
-            const data = isGitHubLoggedIn
-              ? [
-                  ...enterpriseNotifications,
-                  {
-                    hostname: Constants.DEFAULT_AUTH_OPTIONS.hostname,
-                    notifications: gitHubNotifications.data,
-                  },
-                ]
-              : [...enterpriseNotifications];
-
-            triggerNativeNotifications(
-              notifications,
-              data,
-              settings,
-              accounts.user
-            );
-            setNotifications(data);
-            setIsFetching(false);
-          })
-        )
-        .catch(() => {
-          setIsFetching(false);
-          setRequestFailed(true);
+      function getAllGithubNotifications(): AxiosPromise<any>[] {
+        return Array.from(Array(20).keys()).map((page) => {
+          return getGitHubNotifications(page);
         });
+      }
+
+      const promise = new Promise<void>(async (result, reject) => {
+        const entResponses = await axios.all([...getEnterpriseNotifications()]);
+        const enterpriseNotifications = entResponses.map((resp) => {
+          return {
+            hostname: settings.hostname,
+            notifications: resp.data,
+          };
+        });
+        const gitResponses = await axios.all([...getAllGithubNotifications()]);
+        const githubNotifications = [];
+        gitResponses.map((resp) => {
+          let respData = [];
+          try {
+            respData = resp.data;
+            githubNotifications.push(...respData);
+          } catch (e) {
+            console.log(`Unable to get data from Response: ${e}`);
+          }
+        });
+
+        const data = isGitHubLoggedIn
+          ? [
+              {
+                hostname: Constants.DEFAULT_AUTH_OPTIONS.hostname,
+                notifications: githubNotifications,
+              },
+              ...enterpriseNotifications,
+            ]
+          : [...enterpriseNotifications];
+
+        triggerNativeNotifications(
+          notifications,
+          data,
+          settings,
+          accounts.user
+        );
+        setNotifications(data);
+        setIsFetching(false);
+      });
+
+      return promise;
     },
     [notifications]
   );
-
   const markNotification = useCallback(
     async (accounts, id, hostname) => {
       setIsFetching(true);
@@ -122,14 +130,22 @@ export const useNotifications = (): NotificationsState => {
       const token = isEnterprise
         ? getEnterpriseAccountToken(hostname, accounts.enterpriseAccounts)
         : accounts.token;
-
+      let resp: AxiosResponse;
       try {
-        await apiRequestAuth(
+        resp = await apiRequestAuth(
           `${generateGitHubAPIUrl(hostname)}notifications/threads/${id}`,
           'PATCH',
           token,
           {}
         );
+
+        if (resp.status > 299) {
+          console.log(
+            'Unable to acknowledge Notification: Status: %d; Message: %s',
+            resp.statusText,
+            resp.data.message
+          );
+        }
 
         const updatedNotifications = removeNotification(
           id,
@@ -141,6 +157,11 @@ export const useNotifications = (): NotificationsState => {
         setTrayIconColor(updatedNotifications);
         setIsFetching(false);
       } catch (err) {
+        console.log(
+          'Unable to mark notification as read: %s: Error: %s',
+          resp,
+          err
+        );
         setIsFetching(false);
       }
     },
@@ -167,6 +188,7 @@ export const useNotifications = (): NotificationsState => {
         );
         await markNotification(accounts, id, hostname);
       } catch (err) {
+        console.log('Unable to unsubscribe from notification %s', err);
         setIsFetching(false);
       }
     },
@@ -183,12 +205,20 @@ export const useNotifications = (): NotificationsState => {
         : accounts.token;
 
       try {
-        await apiRequestAuth(
+        const resp = await apiRequestAuth(
           `${generateGitHubAPIUrl(hostname)}repos/${repoSlug}/notifications`,
           'PUT',
           token,
           {}
         );
+
+        if (resp.status > 299) {
+          console.log(
+            'Unable to acknowledge RepoNotification: Status: %d; Message: %s',
+            resp.statusText,
+            resp.data.message
+          );
+        }
 
         const updatedNotifications = removeNotifications(
           repoSlug,
@@ -200,6 +230,7 @@ export const useNotifications = (): NotificationsState => {
         setTrayIconColor(updatedNotifications);
         setIsFetching(false);
       } catch (err) {
+        console.log('Unable to patch request %s', err);
         setIsFetching(false);
       }
     },

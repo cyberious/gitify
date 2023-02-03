@@ -1,7 +1,6 @@
 import { AxiosPromise, AxiosResponse } from 'axios';
 
-const { remote } = require('electron');
-const BrowserWindow = remote.BrowserWindow;
+const { BrowserWindow } = require('@electron/remote');
 
 import * as auth from './auth';
 import * as apiRequests from './api-requests';

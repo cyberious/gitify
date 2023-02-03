@@ -1,5 +1,4 @@
-const { remote } = require('electron');
-const BrowserWindow = remote.BrowserWindow;
+const { BrowserWindow } = require('@electron/remote');
 
 import { apiRequest, apiRequestAuth } from '../utils/api-requests';
 import { AuthResponse, AuthState, AuthTokenResponse } from '../types';

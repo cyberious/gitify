@@ -1,14 +1,19 @@
-const { ipcRenderer, remote, shell } = require('electron');
+const { ipcRenderer, shell } = require('electron');
+const remote = require('@electron/remote');
 
 export function openExternalLink(url: string): void {
   shell.openExternal(url);
 }
 
 export function setAutoLaunch(value: boolean): void {
-  remote.app.setLoginItemSettings({
-    openAtLogin: value,
-    openAsHidden: value,
-  });
+  try {
+    remote.app.setLoginItemSettings({
+      openAtLogin: value,
+      openAsHidden: value,
+    });
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 export function updateTrayIcon(notificationsLength = 0): void {
