@@ -4,6 +4,7 @@ import { Constants } from '../utils/constants';
 
 import { AllRead } from './AllRead';
 
+jest.mock('@electron/remote', () => ({ exec: jest.fn() }));
 describe('components/all-read.tsx', function () {
   it('should render itself & its children', function () {
     spyOn(Constants, 'ALLREAD_EMOJIS');

@@ -6,6 +6,7 @@ import { mockAccounts, mockSettings } from '../__mocks__/mock-state';
 import { useNotifications } from './useNotifications';
 import { AuthState } from '../types';
 import { mockedUser } from '../__mocks__/mockedData';
+jest.mock('@electron/remote', () => ({ exec: jest.fn() }));
 
 describe('hooks/useNotifications.ts', () => {
   beforeEach(() => {
@@ -21,7 +22,7 @@ describe('hooks/useNotifications.ts', () => {
         ];
 
         nock('https://api.github.com')
-          .get('/notifications?participating=false')
+          .get('/notifications?participating=false&page=1')
           .reply(200, notifications);
 
         nock('https://github.gitify.io/api/v3')
@@ -51,7 +52,7 @@ describe('hooks/useNotifications.ts', () => {
         const message = 'Oops! Something went wrong.';
 
         nock('https://api.github.com/')
-          .get('/notifications?participating=false')
+          .get('/notifications?participating=false&page=0')
           .reply(400, { message });
 
         nock('https://github.gitify.io/api/v3/')

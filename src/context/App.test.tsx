@@ -9,6 +9,7 @@ import * as apiRequests from '../utils/api-requests';
 import * as comms from '../utils/comms';
 import * as storage from '../utils/storage';
 
+jest.mock('@electron/remote', () => ({ exec: jest.fn() }));
 jest.mock('../hooks/useNotifications');
 
 const customRender = (

@@ -1,4 +1,4 @@
-const remote = require('@electron/remote').remote;
+const remote = require('@electron/remote');
 
 import { generateGitHubWebUrl } from './helpers';
 

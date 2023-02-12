@@ -1,4 +1,4 @@
-import axios, { AxiosPromise, Method } from 'axios';
+import axios, {AxiosPromise, Method} from 'axios';
 
 export function apiRequest(
   url: string,
@@ -16,7 +16,7 @@ export function apiRequestAuth(
   method: Method,
   token: string,
   data = {}
-): AxiosPromise {
+): AxiosPromise<any> {
   axios.defaults.headers.common['Accept'] = 'application/json';
   axios.defaults.headers.common['Authorization'] = `token ${token}`;
   axios.defaults.headers.common['Cache-Control'] = 'no-cache';

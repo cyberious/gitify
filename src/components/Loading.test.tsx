@@ -5,6 +5,7 @@ import NProgress from 'nprogress';
 import { AppContext } from '../context/App';
 import { Loading } from './Loading';
 
+jest.mock('@electron/remote', () => ({ exec: jest.fn() }));
 jest.mock('nprogress', () => {
   return {
     configure: jest.fn(),

@@ -10,7 +10,7 @@
     "make:macos": "electron-builder --mac --universal",
     "make:win": "electron-builder --win",
     "prettier:check": "prettier --check 'src/**/*.{js,ts,tsx}'",
-    "prettier:apply": "prettier --write 'src/**/*.{js,ts,tsx}'",
+    "prettier:apply": "prettier --write 'src/**/*.{js,ts,tsx}' main.js",
     "jest": "jest",
     "test": "yarn jest",
     "start": "electron . -–enable-logging"
