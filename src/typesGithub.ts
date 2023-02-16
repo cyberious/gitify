@@ -12,6 +12,22 @@ export type Reason =
   | 'team_mention'
   | 'ci_activity';
 
+export enum Reasons {
+Assign = 'assign',
+Author = 'author',
+Comment = 'comment',
+Invitation = 'invitation',
+Manual = 'manual',
+Mention ='mention',
+ReviewRequested = 'review_requested',
+SecurityAlert = 'security_alert',
+StateChange = 'state_change',
+Subscribed = 'subscribed',
+TeamMention = 'team_mention',
+CiActivity = 'ci_activity',
+}
+
+
 export type SubjectType =
   | 'CheckSuite'
   | 'Commit'

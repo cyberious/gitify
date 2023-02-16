@@ -19,4 +19,11 @@ export const mockSettings: SettingsState = {
   markOnClick: false,
   openAtStartup: false,
   appearance: Appearance.SYSTEM,
+  excludedNotificationsTypes: {
+    merged: false,
+    assigned: false,
+    comment: false,
+    securityAlert: false,
+    teamMentioned: false,
+  }
 };

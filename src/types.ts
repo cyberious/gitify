@@ -6,10 +6,23 @@ export interface AuthState {
   user: User | null;
 }
 
+export interface SubKeySettings {
+
+}
+
+export interface ExcludeNotificationTypeSettings extends SubKeySettings{
+  merged: boolean,
+  teamMentioned: boolean,
+  securityAlert: boolean,
+  comment: boolean,
+  assigned: boolean
+}
+
 export interface SettingsState {
   participating: boolean;
   playSound: boolean;
   showNotifications: boolean;
+  excludedNotificationsTypes: ExcludeNotificationTypeSettings
   markOnClick: boolean;
   openAtStartup: boolean;
   appearance: Appearance;

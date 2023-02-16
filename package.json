@@ -4,6 +4,7 @@
   "description": "GitHub Notifications on your menu bar.",
   "main": "main.js",
   "scripts": {
+    "dev": "nodemon",
     "build": "webpack --config webpack.prod.js",
     "watch": "webpack --config webpack.common.js --watch",
     "make:linux": "electron-builder --linux",
@@ -14,6 +15,13 @@
     "jest": "jest",
     "test": "yarn jest",
     "start": "electron . -–enable-logging"
+  },
+  "nodemonConfig": {
+    "ignore": ["scripts/**","assets/**", "src/__mocks__/**"],
+    "delay": 2500,
+    "ext": "tsx,js,jsx,ts",
+    "watch": ["./build/js/"],
+    "exec": "electron . --enable-logging"
   },
   "repository": {
     "type": "git",
@@ -143,7 +151,6 @@
     "electron": "^22.0",
     "electron-builder": "^22.11",
     "electron-notarize": "^1.0.1",
-    "electron-reloader": "^1.2.3",
     "jest": "^26.6.3",
     "nock": "^13.0.5",
     "postcss-loader": "^4.1.0",
